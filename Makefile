@@ -1,8 +1,26 @@
 OSXDIR=hello-1.0.0-osx
+LAMBDADIR=hello-1.0.0-linux-x86_64
 
 THIS_FILE := $(lastword $(MAKEFILE_LIST))
 
 .DEFAULT_GOAL := help
+
+package: ## Package the code for AWS Lambda
+	@echo 'Package the app for deploy'
+	@echo '--------------------------'
+	@rm -fr $(LAMBDADIR)
+	@rm -fr deploy
+	@mkdir -p $(LAMBDADIR)/lib/ruby
+	@tar -xzf resources/traveling-ruby-20150715-2.2.2-linux-x86_64.tar.gz -C $(LAMBDADIR)/lib/ruby
+	@mkdir $(LAMBDADIR)/lib/app
+	@cp hello_ruby/lib/hello.rb $(LAMBDADIR)/lib/app/hello.rb
+	@cp resources/wrapper.sh $(LAMBDADIR)/hello
+	@chmod +x $(LAMBDADIR)/hello
+	@cp resources/index.js $(LAMBDADIR)/
+	cd $(LAMBDADIR) && zip -r hello_ruby.zip hello index.js lib/
+	mkdir deploy
+	cd $(LAMBDADIR) && mv hello_ruby.zip ../deploy/
+	@echo '... Done.'
 
 run: ## Runs the code locally
 	@echo 'Run the app locally'
