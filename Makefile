@@ -34,6 +34,31 @@ run: ## Runs the code locally
 	@chmod +x $(OSXDIR)/hello
 	@cd $(OSXDIR) && ./hello
 
+create: ## Creates an AWS lambda function
+	aws lambda create-function \
+		--function-name HelloFromRuby \
+		--handler index.handler \
+		--runtime nodejs4.3 \
+		--memory 512 \
+		--timeout 10 \
+		--description "Saying hello from MRI Ruby" \
+		--role arn:aws:iam::___xyz___:role/lambda_basic_execution \
+		--zip-file fileb://./deploy/hello_ruby.zip
+
+delete: ## Removes the Lambda
+	aws lambda delete-function --function-name HelloFromRuby
+
+invoke: ## Invoke the AWS Lambda in the command line
+	rm -fr tmp && mkdir tmp
+	aws lambda invoke \
+	--invocation-type RequestResponse \
+	--function-name HelloFromRuby \
+	--log-type Tail \
+	--region us-east-1 \
+	--payload '{"name":"John Adam Smith"}' \
+	tmp/outfile.txt \
+	| jq -r '.LogResult' | base64 -D
+
 .PHONY: help
 
 help:
