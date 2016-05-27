@@ -5,6 +5,24 @@ THIS_FILE := $(lastword $(MAKEFILE_LIST))
 
 .DEFAULT_GOAL := help
 
+run: ## Runs the code locally
+	@echo 'Run the app locally'
+	@echo '-------------------'
+	@rm -fr $(OSXDIR)
+	@mkdir -p $(OSXDIR)/lib/ruby
+	@tar -xzf resources/traveling-ruby-20150715-2.2.2-osx.tar.gz -C $(OSXDIR)/lib/ruby
+	@mkdir $(OSXDIR)/lib/app
+	@cp hello_ruby/lib/hello.rb $(OSXDIR)/lib/app/hello.rb
+	@cp -pR hello_ruby/vendor $(OSXDIR)/lib/
+	@rm -f $(OSXDIR)/lib/vendor/*/*/cache/*
+	@mkdir -p $(OSXDIR)/lib/vendor/.bundle
+	@cp resources/bundler-config $(OSXDIR)/lib/vendor/.bundle/config
+	@cp hello_ruby/Gemfile $(OSXDIR)/lib/vendor/
+	@cp hello_ruby/Gemfile.lock $(OSXDIR)/lib/vendor/
+	@cp resources/wrapper.sh $(OSXDIR)/hello
+	@chmod +x $(OSXDIR)/hello
+	@cd $(OSXDIR) && ./hello
+
 package: ## Package the code for AWS Lambda
 	@echo 'Package the app for deploy'
 	@echo '--------------------------'
@@ -21,18 +39,6 @@ package: ## Package the code for AWS Lambda
 	mkdir deploy
 	cd $(LAMBDADIR) && mv hello_ruby.zip ../deploy/
 	@echo '... Done.'
-
-run: ## Runs the code locally
-	@echo 'Run the app locally'
-	@echo '-------------------'
-	@rm -fr $(OSXDIR)
-	@mkdir -p $(OSXDIR)/lib/ruby
-	@tar -xzf resources/traveling-ruby-20150715-2.2.2-osx.tar.gz -C $(OSXDIR)/lib/ruby
-	@mkdir $(OSXDIR)/lib/app
-	@cp hello_ruby/lib/hello.rb $(OSXDIR)/lib/app/hello.rb
-	@cp resources/wrapper.sh $(OSXDIR)/hello
-	@chmod +x $(OSXDIR)/hello
-	@cd $(OSXDIR) && ./hello
 
 create: ## Creates an AWS lambda function
 	aws lambda create-function \
