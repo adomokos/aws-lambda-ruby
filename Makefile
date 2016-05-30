@@ -41,9 +41,9 @@ package: ## Package the code for AWS Lambda
 	@cp resources/wrapper.sh $(LAMBDADIR)/hello
 	@chmod +x $(LAMBDADIR)/hello
 	@cp resources/index.js $(LAMBDADIR)/
-	@cd $(LAMBDADIR) && zip -r hello_ruby.zip hello index.js lib/
+	@cd $(LAMBDADIR) && zip -r hello_ruby.zip hello index.js lib/ > /dev/null
 	@mkdir deploy
-	cd $(LAMBDADIR) && mv hello_ruby.zip ../deploy/
+	@cd $(LAMBDADIR) && mv hello_ruby.zip ../deploy/
 	@echo '... Done.'
 
 create: ## Creates an AWS lambda function
@@ -55,6 +55,11 @@ create: ## Creates an AWS lambda function
 		--timeout 10 \
 		--description "Saying hello from MRI Ruby" \
 		--role arn:aws:iam::___xyz___:role/lambda_basic_execution \
+		--zip-file fileb://./deploy/hello_ruby.zip
+
+publish: package ## Deploys the latest version to AWS
+	aws lambda update-function-code \
+		--function-name HelloFromRuby \
 		--zip-file fileb://./deploy/hello_ruby.zip
 
 delete: ## Removes the Lambda
