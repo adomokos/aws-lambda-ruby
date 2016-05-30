@@ -1,5 +1,7 @@
 OSXDIR=hello-1.0.0-osx
 LAMBDADIR=hello-1.0.0-linux-x86_64
+DBPASSWD=Kew2401Sd
+DBNAME=awslambdaruby
 
 THIS_FILE := $(lastword $(MAKEFILE_LIST))
 
@@ -75,6 +77,32 @@ invoke: ## Invoke the AWS Lambda in the command line
 	--payload '{"name":"John Adam Smith"}' \
 	tmp/outfile.txt \
 	| jq -r '.LogResult' | base64 -D
+
+create-rds-instance: ## Creates an RDS MySQL DB instance
+	aws rds create-db-instance \
+		--db-instance-identifier MyInstance01 \
+		--db-instance-class db.t1.micro \
+		--engine mysql \
+		--allocated-storage 10 \
+		--master-username master \
+		--master-user-password $(DBPASSWD)
+
+delete-rds-instance: ## Deletes an RDS MySQL DB instance
+	aws rds delete-db-instance \
+		--db-instance-identifier MyInstance01 \
+		--skip-final-snapshot
+
+db-connect: ## Connects to the RDS instance
+	mysql --user=master --password=$(DBPASSWD) --host myinstance01.cgic5q3lz0bb.us-east-1.rds.amazonaws.com
+
+create-db: ## Creates a DB with a table and records
+	@echo "Dropping  and creating database"
+	@echo "-------------------------------"
+	@mysql -u master --password='$(DBPASSWD)' --host myinstance01.cgic5q3lz0bb.us-east-1.rds.amazonaws.com -e "DROP DATABASE IF EXISTS $(DBNAME)" > /dev/null 2>&1
+	@mysql -u master --password='$(DBPASSWD)' --host myinstance01.cgic5q3lz0bb.us-east-1.rds.amazonaws.com -e "CREATE DATABASE $(DBNAME)" > /dev/null 2>&1
+	@mysql -u master --password='$(DBPASSWD)' --host myinstance01.cgic5q3lz0bb.us-east-1.rds.amazonaws.com $(DBNAME) < resources/schema.sql > /dev/null 2>&1
+	@mysql -u master --password='$(DBPASSWD)' --host myinstance01.cgic5q3lz0bb.us-east-1.rds.amazonaws.com $(DBNAME) < resources/seed.sql > /dev/null 2>&1
+	@echo "... Done"
 
 .PHONY: help
 
