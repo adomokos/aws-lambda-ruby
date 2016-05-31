@@ -25,7 +25,7 @@ run: ## Runs the code locally
 	@chmod +x $(OSXDIR)/hello
 	@cd $(OSXDIR) && ./hello
 
-package: ## Package the code for AWS Lambda
+package: ## Packages the code for AWS Lambda
 	@echo 'Package the app for deploy'
 	@echo '--------------------------'
 	@rm -fr $(LAMBDADIR)
@@ -67,7 +67,7 @@ publish: package ## Deploys the latest version to AWS
 delete: ## Removes the Lambda
 	aws lambda delete-function --function-name HelloFromRuby
 
-invoke: ## Invoke the AWS Lambda in the command line
+invoke: ## Invokes the AWS Lambda in the command line
 	rm -fr tmp && mkdir tmp
 	aws lambda invoke \
 	--invocation-type RequestResponse \
