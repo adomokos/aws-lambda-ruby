@@ -35,6 +35,8 @@ package: ## Packages the code for AWS Lambda
 	@mkdir $(LAMBDADIR)/lib/app
 	@cp hello_ruby/lib/hello.rb $(LAMBDADIR)/lib/app/hello.rb
 	@cp -pR hello_ruby/vendor $(LAMBDADIR)/lib/
+	@rm -fr $(LAMBDADIR)/lib/vendor/ruby/2.2.0/extensions
+	@tar -xzf resources/mysql2-0.3.18-linux.tar.gz -C $(LAMBDADIR)/lib/vendor/ruby/
 	@rm -f $(LAMBDADIR)/lib/vendor/*/*/cache/*
 	@mkdir -p $(LAMBDADIR)/lib/vendor/.bundle
 	@cp resources/bundler-config $(LAMBDADIR)/lib/vendor/.bundle/config
